@@ -1,8 +1,10 @@
+import os
 from sklearn import datasets as skdatasets
 from sklearn import metrics
 from sklearn.datasets.mldata import fetch_mldata
 from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
 from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
+from sklearn.externals import joblib
 from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
@@ -12,6 +14,8 @@ from sklearn.tree import DecisionTreeClassifier
 
 digits_simple = skdatasets.load_digits()
 digits_full = fetch_mldata("MNIST original")
+digits_full.data = digits_full.data[:10000]
+digits_full.target = digits_full.target[:10000]
 
 # number_of_data = digits.data.shape[0]
 # number_of_small_data = number_of_data // 2
@@ -60,9 +64,16 @@ for ds_cnt, ds in enumerate(datasets):
     # iterate over classifiers
     for name, clf in zip(names, classifiers):
         print("===================Now start %s for %s===================" % (name, dataset_names[ds_cnt]))
-        print("fitting...")
-        clf.fit(X_train, y_train)
+        output_name = "%s_%s.pkl" % (name, dataset_names[ds_cnt])
+        if os.path.isfile(output_name):
+            print("loading...")
+            clf = joblib.load(output_name)[1]
+        else:
+            print("fitting...")
+            clf.fit(X_train, y_train)
         print("predicting...")
         predicted = clf.predict(X_test)
         print("evaluating...")
         print("%s accuracy: %s" % (name, metrics.accuracy_score(y_test, predicted)))
+        print("dumping weights...")
+        joblib.dump((output_name, clf), output_name)
