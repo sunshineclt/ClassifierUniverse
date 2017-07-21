@@ -52,7 +52,6 @@ datasets = [(digits_simple.data, digits_simple.target), (digits_full.data, digit
 for ds_cnt, ds in enumerate(datasets):
     # preprocess dataset, split into training and test part
     X, y = ds
-    X = StandardScaler().fit_transform(X)
     X_train, X_test, y_train, y_test = \
         train_test_split(X, y, test_size=.1, random_state=42)
 
