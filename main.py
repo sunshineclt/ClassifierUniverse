@@ -15,8 +15,9 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
 from sklearn import metrics
 from sklearn import datasets as skdatasets
+from sklearn.datasets.mldata import fetch_mldata
 
-digits = skdatasets.load_digits()
+digits = fetch_mldata("MNIST original")
 number_of_data = digits.data.shape[0]
 number_of_small_data = number_of_data // 2
 number_of_cross_validation_data = number_of_data // 4
@@ -32,7 +33,7 @@ cross_validation_label = digits.target[number_of_small_data:number_of_small_data
 train_label_big = digits.target[0:number_of_big_data]
 test_label = digits.target[number_of_big_data:number_of_big_data+number_of_test_data]
 
-names = ["Nearest Neighbors", "Linear SVM", "RBF SVM", "Gaussian Process",
+names = ["Nearest Neighbors", "Linear SVM", "RBF SVM",
          "Decision Tree", "Random Forest", "Neural Net", "AdaBoost",
          "Naive Bayes", "QDA"]
 
@@ -40,7 +41,7 @@ classifiers = [
     KNeighborsClassifier(3),
     SVC(kernel="linear", C=0.025),
     SVC(gamma=2, C=1),
-    GaussianProcessClassifier(1.0 * RBF(1.0), warm_start=True),
+    # GaussianProcessClassifier(1.0 * RBF(1.0), warm_start=True),
     DecisionTreeClassifier(max_depth=5),
     RandomForestClassifier(max_depth=5, n_estimators=10, max_features=1),
     MLPClassifier(alpha=1),
@@ -97,9 +98,11 @@ for ds_cnt, ds in enumerate(datasets):
 
     # iterate over classifiers
     for name, clf in zip(names, classifiers):
+        print("===================Now start %s===================" % (name))
         # ax = plt.subplot(len(datasets), len(classifiers) + 1, i)
+        print("fitting...")
         clf.fit(X_train, y_train)
-        score = clf.score(X_test, y_test)
+        # score = clf.score(X_test, y_test)
 
         # Plot the decision boundary. For that, we will assign a color to each
         # point in the mesh [x_min, x_max]x[y_min, y_max].
@@ -107,7 +110,9 @@ for ds_cnt, ds in enumerate(datasets):
         #     Z = clf.decision_function(np.c_[xx.ravel(), yy.ravel()])
         # else:
         #     Z = clf.predict_proba(np.c_[xx.ravel(), yy.ravel()])[:, 1]
+        print("predicting...")
         predicted = clf.predict(X_test)
+        print("evaluating...")
         print("%s error: %d" % (name, metrics.accuracy_score(y_test, predicted)))
 
         # Put the result into a color plot
@@ -131,8 +136,8 @@ for ds_cnt, ds in enumerate(datasets):
 
         i += 1
 
-plt.tight_layout()
-plt.show()
+# plt.tight_layout()
+# plt.show()
 
 
 # clf = svm.SVC(gamma=0.001, C=100.)
