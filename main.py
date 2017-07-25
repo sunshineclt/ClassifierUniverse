@@ -16,21 +16,8 @@ digits_simple = skdatasets.load_digits()
 digits_full = fetch_mldata("MNIST original")
 digits_full.data = digits_full.data[:10000]
 digits_full.target = digits_full.target[:10000]
-
-# number_of_data = digits.data.shape[0]
-# number_of_small_data = number_of_data // 2
-# number_of_cross_validation_data = number_of_data // 4
-# number_of_big_data = number_of_data * 3 // 4
-# number_of_test_data = number_of_data // 4
-#
-# train_data_small = digits.data[0:number_of_small_data]
-# cross_validation_data = digits.data[number_of_small_data:number_of_small_data+number_of_cross_validation_data]
-# train_data_big = digits.data[0:number_of_big_data]
-# test_data = digits.data[number_of_big_data:number_of_big_data+number_of_test_data]
-# train_label_small = digits.target[0:number_of_small_data]
-# cross_validation_label = digits.target[number_of_small_data:number_of_small_data+number_of_cross_validation_data]
-# train_label_big = digits.target[0:number_of_big_data]
-# test_label = digits.target[number_of_big_data:number_of_big_data+number_of_test_data]
+digits_full.cv_data = digits_full.data[10000:12000]
+digits_full.cv_target = digits_full.data[10000:12000]
 
 names = ["Nearest Neighbors", "Linear SVM", "RBF SVM",
          "Decision Tree", "Random Forest", "Neural Net", "AdaBoost",
@@ -55,7 +42,7 @@ for ds_cnt, ds in enumerate(datasets):
     # preprocess dataset, split into training and test part
     X, y = ds
     X_train, X_test, y_train, y_test = \
-        train_test_split(X, y, test_size=.1, random_state=42)
+        train_test_split(X, y, test_size=.2, random_state=42)
 
     x_min, x_max = X[:, 0].min() - .5, X[:, 0].max() + .5
     y_min, y_max = X[:, 1].min() - .5, X[:, 1].max() + .5
