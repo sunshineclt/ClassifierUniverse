@@ -195,7 +195,14 @@ In this project, I implemented two online learning algorithms (EWA and REWA) and
 \subsection{Full MNIST}
 \paragraph{}
 	
-	The full MNIST task is much harder than simple MNIST, and no wonder many algorithms' performance decline (see Table \ref{table:full_MNIST_cv}). But the K nearest neighbors, linear SVM and MLP algorithm can still reach CV accuracy over 90\%. So the result will be similar to the simple MNIST since the online learning algorithm will choose K nearest neighbors almost all the time after some exploration. The testing result indicates this is exactly the case: the cross validation chooses nearest neighbors and its accuracy is 96.9\%, the EWA's accuracy is 95.5\% and the REWA's accuracy is 96.6\%. 
+	The full MNIST task is much harder than simple MNIST, and no wonder many algorithms' performance decline (see Table \ref{table:full_MNIST_cv}). But the K nearest neighbors, linear SVM and MLP algorithm can still reach CV accuracy over 90\%. So the result will be similar to the simple MNIST since the online learning algorithm will choose K nearest neighbors almost all the time after some exploration (See Figure \ref{fig:weights}). The testing result indicates this is exactly the case: the cross validation chooses nearest neighbors and its accuracy is 96.9\%, the EWA's accuracy is 95.5\% and the REWA's accuracy is 96.6\%. 
+	
+\begin{figure*}[htb]
+\centering
+\includegraphics[width=\linewidth / 2]{graph/weights}
+\caption{Weights changing during testing}
+\label{fig:weights}
+\end{figure*}
 	
 \begin{table}[htb]
 \caption{Full MNIST cross validation result}
