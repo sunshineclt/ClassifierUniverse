@@ -53,16 +53,13 @@ digits_full.train_target = np.concatenate(trainy, axis=0)
 digits_full.cv_data = np.concatenate(cvx, axis=0)
 digits_full.cv_target = np.concatenate(cvy, axis=0)
 
-names = ["Nearest Neighbors", "Linear SVM",
-         "Decision Tree", "Random Forest", "Neural Net", "AdaBoost",
+names = [
+         "Decision Tree", "Random Forest", "AdaBoost",
          "Naive Bayes", "QDA"]
 
 classifiers = [
-    KNeighborsClassifier(3),
-    SVC(kernel="linear", C=0.025),
     DecisionTreeClassifier(max_depth=5),
     RandomForestClassifier(max_depth=5, n_estimators=10, max_features=1),
-    MLPClassifier(alpha=1),
     AdaBoostClassifier(),
     GaussianNB(),
     QuadraticDiscriminantAnalysis()]
@@ -71,6 +68,8 @@ dataset_names = ["digits_simple", "digits_full"]
 datasets = [digits_simple, digits_full]
 
 print("Start time: %s" % datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S'))
+
+weight_record = []
 
 # iterate over datasets
 for ds_cnt, data in enumerate(datasets):
@@ -82,39 +81,39 @@ for ds_cnt, data in enumerate(datasets):
     y_cv = data.cv_target
     X_test = data.test_data
     y_test = data.test_target
-
-    cross_validation_max = 0
-    chosen_algo_cnt = 0
-    chosen_algo = classifiers[0]
-    # iterate over classifiers
-    for algo_cnt, algo in enumerate(zip(names, classifiers)):
-        name, clf = algo
-        print("===================Now start %s for %s cv===================" % (name, dataset_names[ds_cnt]))
-        output_name = "%s_%s_cv.pkl" % (name, dataset_names[ds_cnt])
-        if os.path.isfile(output_name):
-            print("loading...")
-            clf = joblib.load(output_name)[1]
-        else:
-            print("fitting...")
-            clf.fit(X_train, y_train)
-            print("dumping weights...")
-            joblib.dump((output_name, clf), output_name)
-        print("predicting...")
-        predicted = clf.predict(X_cv)
-        print("evaluating...")
-        accuracy = float(metrics.accuracy_score(y_cv, predicted))
-        print("%s cross validation accuracy: %f" % (name, accuracy))
-        if accuracy > cross_validation_max:
-            cross_validation_max = accuracy
-            chosen_algo_cnt = algo_cnt
-            chosen_algo = clf
-
-    print("*****************CV chosen algo is %s*****************" % (names[chosen_algo_cnt]))
-    print("predicting...")
-    predicted = chosen_algo.predict(X_test)
-    print("evaluating...")
-    accuracy_cv = float(metrics.accuracy_score(y_test, predicted))
-    print("test accuracy cv: %f" % accuracy_cv)
+    #
+    # cross_validation_max = 0
+    # chosen_algo_cnt = 0
+    # chosen_algo = classifiers[0]
+    # # iterate over classifiers
+    # for algo_cnt, algo in enumerate(zip(names, classifiers)):
+    #     name, clf = algo
+    #     print("===================Now start %s for %s cv===================" % (name, dataset_names[ds_cnt]))
+    #     output_name = "%s_%s_cv.pkl" % (name, dataset_names[ds_cnt])
+    #     if os.path.isfile(output_name):
+    #         print("loading...")
+    #         clf = joblib.load(output_name)[1]
+    #     else:
+    #         print("fitting...")
+    #         clf.fit(X_train, y_train)
+    #         print("dumping weights...")
+    #         joblib.dump((output_name, clf), output_name)
+    #     print("predicting...")
+    #     predicted = clf.predict(X_cv)
+    #     print("evaluating...")
+    #     accuracy = float(metrics.accuracy_score(y_cv, predicted))
+    #     print("%s cross validation accuracy: %f" % (name, accuracy))
+    #     if accuracy > cross_validation_max:
+    #         cross_validation_max = accuracy
+    #         chosen_algo_cnt = algo_cnt
+    #         chosen_algo = clf
+    #
+    # print("*****************CV chosen algo is %s*****************" % (names[chosen_algo_cnt]))
+    # print("predicting...")
+    # predicted = chosen_algo.predict(X_test)
+    # print("evaluating...")
+    # accuracy_cv = float(metrics.accuracy_score(y_test, predicted))
+    # print("test accuracy cv: %f" % accuracy_cv)
 
     # EWA part
     X_train = np.append(X_train, X_cv, axis=0)
@@ -149,8 +148,9 @@ for ds_cnt, data in enumerate(datasets):
             z += weight[algo_cnt]
 
         t += 1
-        if t % 1000 == 0:
+        if t % 100 == 0:
             print(weight)
+            weight_record.append(weight)
         p_EWA /= sum_weight
         p_EWA = round(p_EWA)
         if p_EWA == y:
@@ -171,3 +171,4 @@ for ds_cnt, data in enumerate(datasets):
     print("test accuracy REWA: %f" % accurate_count_REWA)
 
 print("End time: %s" % datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S'))
+np.array(weight_record).tofile("weight.npz")
