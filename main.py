@@ -22,11 +22,6 @@ digits_simple.test_data = digits_simple.data[1200:1400]
 digits_simple.test_target = digits_simple.target[1200:1400]
 digits_simple.train_data = digits_simple.data[:1200]
 digits_simple.train_target = digits_simple.target[:1200]
-# digits_full = fetch_mldata("MNIST original")
-# digits_full.cv_data = digits_full.data[30000:35000]
-# digits_full.cv_target = digits_full.target[30000:35000]
-# digits_full.data = digits_full.data[:30000]
-# digits_full.target = digits_full.target[:30000]
 digits_full = np.load('mnist.npz')
 digits_full.data = np.concatenate([digits_full['x_train'], digits_full['x_valid']], axis=0)
 digits_full.target = np.concatenate([digits_full['y_train'], digits_full['y_valid']]).astype(np.int32)
@@ -53,13 +48,16 @@ digits_full.train_target = np.concatenate(trainy, axis=0)
 digits_full.cv_data = np.concatenate(cvx, axis=0)
 digits_full.cv_target = np.concatenate(cvy, axis=0)
 
-names = [
-         "Decision Tree", "Random Forest", "AdaBoost",
+names = ["Nearest Neighbors", "Linear SVM",
+         "Decision Tree", "Random Forest", "Neural Net", "AdaBoost",
          "Naive Bayes", "QDA"]
 
 classifiers = [
+    KNeighborsClassifier(3),
+    SVC(kernel="linear", C=0.025),
     DecisionTreeClassifier(max_depth=5),
     RandomForestClassifier(max_depth=5, n_estimators=10, max_features=1),
+    MLPClassifier(alpha=1),
     AdaBoostClassifier(),
     GaussianNB(),
     QuadraticDiscriminantAnalysis()]
@@ -81,39 +79,39 @@ for ds_cnt, data in enumerate(datasets):
     y_cv = data.cv_target
     X_test = data.test_data
     y_test = data.test_target
-    #
-    # cross_validation_max = 0
-    # chosen_algo_cnt = 0
-    # chosen_algo = classifiers[0]
-    # # iterate over classifiers
-    # for algo_cnt, algo in enumerate(zip(names, classifiers)):
-    #     name, clf = algo
-    #     print("===================Now start %s for %s cv===================" % (name, dataset_names[ds_cnt]))
-    #     output_name = "%s_%s_cv.pkl" % (name, dataset_names[ds_cnt])
-    #     if os.path.isfile(output_name):
-    #         print("loading...")
-    #         clf = joblib.load(output_name)[1]
-    #     else:
-    #         print("fitting...")
-    #         clf.fit(X_train, y_train)
-    #         print("dumping weights...")
-    #         joblib.dump((output_name, clf), output_name)
-    #     print("predicting...")
-    #     predicted = clf.predict(X_cv)
-    #     print("evaluating...")
-    #     accuracy = float(metrics.accuracy_score(y_cv, predicted))
-    #     print("%s cross validation accuracy: %f" % (name, accuracy))
-    #     if accuracy > cross_validation_max:
-    #         cross_validation_max = accuracy
-    #         chosen_algo_cnt = algo_cnt
-    #         chosen_algo = clf
-    #
-    # print("*****************CV chosen algo is %s*****************" % (names[chosen_algo_cnt]))
-    # print("predicting...")
-    # predicted = chosen_algo.predict(X_test)
-    # print("evaluating...")
-    # accuracy_cv = float(metrics.accuracy_score(y_test, predicted))
-    # print("test accuracy cv: %f" % accuracy_cv)
+
+    cross_validation_max = 0
+    chosen_algo_cnt = 0
+    chosen_algo = classifiers[0]
+    # iterate over classifiers
+    for algo_cnt, algo in enumerate(zip(names, classifiers)):
+        name, clf = algo
+        print("===================Now start %s for %s cv===================" % (name, dataset_names[ds_cnt]))
+        output_name = "%s_%s_cv.pkl" % (name, dataset_names[ds_cnt])
+        if os.path.isfile(output_name):
+            print("loading...")
+            clf = joblib.load(output_name)[1]
+        else:
+            print("fitting...")
+            clf.fit(X_train, y_train)
+            print("dumping weights...")
+            joblib.dump((output_name, clf), output_name)
+        print("predicting...")
+        predicted = clf.predict(X_cv)
+        print("evaluating...")
+        accuracy = float(metrics.accuracy_score(y_cv, predicted))
+        print("%s cross validation accuracy: %f" % (name, accuracy))
+        if accuracy > cross_validation_max:
+            cross_validation_max = accuracy
+            chosen_algo_cnt = algo_cnt
+            chosen_algo = clf
+
+    print("*****************CV chosen algo is %s*****************" % (names[chosen_algo_cnt]))
+    print("predicting...")
+    predicted = chosen_algo.predict(X_test)
+    print("evaluating...")
+    accuracy_cv = float(metrics.accuracy_score(y_test, predicted))
+    print("test accuracy cv: %f" % accuracy_cv)
 
     # EWA part
     X_train = np.append(X_train, X_cv, axis=0)
